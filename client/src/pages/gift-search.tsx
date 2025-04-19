@@ -5,13 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import GiftCard from "@/components/ui/gift-card";
@@ -27,29 +20,43 @@ export default function GiftSearch() {
   
   // State for filters
   const [searchTerm, setSearchTerm] = useState(params.get("search") || "");
-  const [category, setCategory] = useState<string>(params.get("category") || "");
+  
+  // Parse categories from URL (comma-separated list)
+  const categoriesParam = params.get("categories") || "";
+  const initialCategories = categoriesParam ? categoriesParam.split(',') : [];
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(initialCategories);
+  
   const [brandable, setBrandable] = useState<boolean>(params.get("brandable") === "true");
   const [ecoFriendly, setEcoFriendly] = useState<boolean>(params.get("ecoFriendly") === "true");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]); // In cents, $0-$200
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  
+  // Toggle category selection
+  const toggleCategory = (category: string) => {
+    setSelectedCategories(current => 
+      current.includes(category)
+        ? current.filter(c => c !== category)
+        : [...current, category]
+    );
+  };
   
   // Apply filters to URL
   useEffect(() => {
     const params = new URLSearchParams();
     
     if (searchTerm) params.set("search", searchTerm);
-    if (category && category !== "all") params.set("category", category);
+    if (selectedCategories.length > 0) params.set("categories", selectedCategories.join(','));
     if (brandable) params.set("brandable", "true");
     if (ecoFriendly) params.set("ecoFriendly", "true");
     
     setLocation(`/gifts?${params.toString()}`);
-  }, [searchTerm, category, brandable, ecoFriendly, setLocation]);
+  }, [searchTerm, selectedCategories, brandable, ecoFriendly, setLocation]);
   
   // Get filtered gifts
   const { data: gifts = [], isLoading } = useQuery<Gift[]>({
     queryKey: ["/api/gifts", { 
       approved: true, 
-      category: category === "all" ? undefined : category, 
+      categories: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined, 
       brandable, 
       ecoFriendly, 
       search: searchTerm 
@@ -73,7 +80,7 @@ export default function GiftSearch() {
   // Reset all filters
   const resetFilters = () => {
     setSearchTerm("");
-    setCategory("all");
+    setSelectedCategories([]);
     setBrandable(false);
     setEcoFriendly(false);
     setPriceRange([0, 20000]);
@@ -85,19 +92,18 @@ export default function GiftSearch() {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">Categories</h3>
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="mt-2">
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {Object.values(GiftCategory).map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="mt-3 space-y-3">
+          {Object.values(GiftCategory).map((cat) => (
+            <div key={cat} className="flex items-center space-x-2">
+              <Checkbox 
+                id={`category-${cat}`} 
+                checked={selectedCategories.includes(cat)} 
+                onCheckedChange={() => toggleCategory(cat)}
+              />
+              <Label htmlFor={`category-${cat}`}>{cat}</Label>
+            </div>
+          ))}
+        </div>
       </div>
       
       <Separator />
@@ -200,7 +206,7 @@ export default function GiftSearch() {
         {/* Results */}
         <div className="flex-grow">
           {/* Active filters */}
-          {((category && category !== "all") || brandable || ecoFriendly || searchTerm) && (
+          {(selectedCategories.length > 0 || brandable || ecoFriendly || searchTerm) && (
             <div className="mb-6 flex flex-wrap gap-2 items-center">
               <span className="text-sm text-gray-500">Active filters:</span>
               
@@ -216,17 +222,17 @@ export default function GiftSearch() {
                 </div>
               )}
               
-              {category && (
-                <div className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm flex items-center">
-                  {category}
+              {selectedCategories.map(cat => (
+                <div key={cat} className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm flex items-center">
+                  {cat}
                   <button 
-                    onClick={() => setCategory("all")}
+                    onClick={() => toggleCategory(cat)}
                     className="ml-2 text-primary/70 hover:text-primary"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
-              )}
+              ))}
               
               {brandable && (
                 <div className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm flex items-center">
