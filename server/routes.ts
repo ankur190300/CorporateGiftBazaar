@@ -5,6 +5,7 @@ import { setupAuth, hashPassword } from "./auth";
 import { UserRole } from "@shared/schema";
 import { insertGiftSchema, insertCartItemSchema, insertGiftRequestSchema } from "@shared/schema";
 import { z } from "zod";
+import { generateHamperSuggestion } from "./openai";
 
 // Middleware to check if user is authenticated
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -442,6 +443,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(updatedRequest);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  // Chatbot hamper suggestion endpoint
+  app.post("/api/hamper-suggestions", async (req, res, next) => {
+    try {
+      const { messages } = req.body;
+      
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ message: "Invalid request format. Expected array of messages." });
+      }
+      
+      const suggestion = await generateHamperSuggestion(messages);
+      res.json(suggestion);
     } catch (error) {
       next(error);
     }

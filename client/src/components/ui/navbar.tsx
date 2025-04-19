@@ -292,6 +292,18 @@ export default function Navbar() {
                         </a>
                       </Link>
                       
+                      <Link href="/hampers">
+                        <a className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
+                          Gift Hampers
+                        </a>
+                      </Link>
+                      
+                      <Link href="/custom-hamper">
+                        <a className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50">
+                          Create Custom Hamper
+                        </a>
+                      </Link>
+                      
                       {/* Role-specific links */}
                       {user && user.role === UserRole.HR && (
                         <Link href="/cart">
