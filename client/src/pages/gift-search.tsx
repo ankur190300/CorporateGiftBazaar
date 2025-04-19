@@ -38,7 +38,7 @@ export default function GiftSearch() {
     const params = new URLSearchParams();
     
     if (searchTerm) params.set("search", searchTerm);
-    if (category) params.set("category", category);
+    if (category && category !== "all") params.set("category", category);
     if (brandable) params.set("brandable", "true");
     if (ecoFriendly) params.set("ecoFriendly", "true");
     
@@ -47,7 +47,13 @@ export default function GiftSearch() {
   
   // Get filtered gifts
   const { data: gifts = [], isLoading } = useQuery<Gift[]>({
-    queryKey: ["/api/gifts", { approved: true, category, brandable, ecoFriendly, search: searchTerm }],
+    queryKey: ["/api/gifts", { 
+      approved: true, 
+      category: category === "all" ? undefined : category, 
+      brandable, 
+      ecoFriendly, 
+      search: searchTerm 
+    }],
   });
   
   // Apply price filter client-side
@@ -67,7 +73,7 @@ export default function GiftSearch() {
   // Reset all filters
   const resetFilters = () => {
     setSearchTerm("");
-    setCategory("");
+    setCategory("all");
     setBrandable(false);
     setEcoFriendly(false);
     setPriceRange([0, 20000]);
@@ -84,7 +90,7 @@ export default function GiftSearch() {
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Categories</SelectItem>
+            <SelectItem value="all">All Categories</SelectItem>
             {Object.values(GiftCategory).map((cat) => (
               <SelectItem key={cat} value={cat}>
                 {cat}
@@ -194,7 +200,7 @@ export default function GiftSearch() {
         {/* Results */}
         <div className="flex-grow">
           {/* Active filters */}
-          {(category || brandable || ecoFriendly || searchTerm) && (
+          {((category && category !== "all") || brandable || ecoFriendly || searchTerm) && (
             <div className="mb-6 flex flex-wrap gap-2 items-center">
               <span className="text-sm text-gray-500">Active filters:</span>
               
@@ -214,7 +220,7 @@ export default function GiftSearch() {
                 <div className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm flex items-center">
                   {category}
                   <button 
-                    onClick={() => setCategory("")}
+                    onClick={() => setCategory("all")}
                     className="ml-2 text-primary/70 hover:text-primary"
                   >
                     <X className="h-3 w-3" />
