@@ -12,10 +12,14 @@ import {
   GiftRequest,
   InsertGiftRequest,
   UserRole,
-  RequestStatus
+  RequestStatus,
+  GiftCategory,
+  UserRoleType,
+  RequestStatusType,
+  GiftCategoryType
 } from "@shared/schema";
-import createMemoryStore from "memorystore";
 import session from "express-session";
+import createMemoryStore from "memorystore";
 
 const MemoryStore = createMemoryStore(session);
 
@@ -97,6 +101,171 @@ export class MemStorage implements IStorage {
       name: "System Admin",
       company: "GiftConnect",
       role: UserRole.ADMIN
+    });
+    
+    // Seed vendor user
+    const vendorUser = this.createUser({
+      username: "vendor",
+      password: "vendor_password", // This will be hashed by the auth service
+      email: "vendor@luxgifts.com",
+      name: "Luxury Gifts Vendor",
+      company: "Luxury Gifts Co.",
+      role: UserRole.VENDOR
+    });
+    
+    // Seed HR user
+    this.createUser({
+      username: "hr",
+      password: "hr_password", // This will be hashed by the auth service
+      email: "hr@acmecorp.com",
+      name: "HR Manager",
+      company: "Acme Corporation",
+      role: UserRole.HR
+    });
+    
+    // Seed sample gifts
+    this.createGift({
+      name: "Premium Leather Journal",
+      description: "Handcrafted leather journal with custom embossing options. Perfect for executives and team leaders.",
+      price: 3500, // $35.00
+      imageUrl: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3",
+      category: GiftCategory.OFFICE,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: false,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Sustainable Bamboo Gift Set",
+      description: "Eco-friendly bamboo gift set including a water bottle, cutlery set, and lunch box. All items can be customized with your company logo.",
+      price: 4500, // $45.00
+      imageUrl: "https://images.unsplash.com/photo-1584897149326-a77811068203?auto=format&fit=crop&q=80&w=1964&ixlib=rb-4.0.3",
+      category: GiftCategory.ECO_FRIENDLY,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: true,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Wireless Charging Desk Organizer",
+      description: "Multi-functional desk organizer with built-in wireless charging pad. Keeps desks tidy while providing convenient charging for phones.",
+      price: 5900, // $59.00
+      imageUrl: "https://images.unsplash.com/photo-1619506147448-b56ba8ee11ec?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3",
+      category: GiftCategory.TECHNOLOGY,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: false,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Gourmet Coffee Gift Basket",
+      description: "Luxury gift basket featuring premium coffee beans from around the world, accompanied by artisanal cookies and a branded ceramic mug.",
+      price: 7500, // $75.00
+      imageUrl: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3",
+      category: GiftCategory.FOOD_BEVERAGE,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: false,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Mindfulness Meditation Kit",
+      description: "Complete wellness kit with guided meditation cards, essential oils, and a premium eye pillow. Helps reduce stress and promote well-being.",
+      price: 6200, // $62.00
+      imageUrl: "https://images.unsplash.com/photo-1602192509154-0b900ee1f851?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3",
+      category: GiftCategory.WELLNESS,
+      vendorId: vendorUser.id,
+      brandable: false,
+      ecoFriendly: true,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Executive Desk Plant Set",
+      description: "Set of three low-maintenance desk plants in elegant ceramic pots. Brings nature into the office environment.",
+      price: 4200, // $42.00
+      imageUrl: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&q=80&w=1972&ixlib=rb-4.0.3",
+      category: GiftCategory.ECO_FRIENDLY,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: true,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Personalized Photo Calendar",
+      description: "Custom wall calendar featuring your team photos or company achievements. A great way to celebrate company milestones.",
+      price: 2900, // $29.00
+      imageUrl: "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?auto=format&fit=crop&q=80&w=2068&ixlib=rb-4.0.3",
+      category: GiftCategory.CUSTOMIZED,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: false,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Premium Wine Gift Set",
+      description: "Elegant gift box containing two bottles of premium wine, paired with gourmet chocolates and cheese. Perfect for client appreciation.",
+      price: 8900, // $89.00
+      imageUrl: "https://images.unsplash.com/photo-1516594915697-87eb3b1c14ea?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3",
+      category: GiftCategory.FOOD_BEVERAGE,
+      vendorId: vendorUser.id,
+      brandable: false,
+      ecoFriendly: false,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Smart Water Bottle",
+      description: "Technology-enhanced water bottle that tracks hydration levels and glows to remind users to drink water. Can be branded with company logo.",
+      price: 4800, // $48.00
+      imageUrl: "https://images.unsplash.com/photo-1556228852-80b6e5eeff06?auto=format&fit=crop&q=80&w=1887&ixlib=rb-4.0.3",
+      category: GiftCategory.TECHNOLOGY,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: true,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Virtual Reality Headset",
+      description: "Entry-level VR headset for immersive team building activities or virtual office tours. Comes with pre-loaded apps.",
+      price: 12900, // $129.00
+      imageUrl: "https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&q=80&w=2070&ixlib=rb-4.0.3",
+      category: GiftCategory.TECHNOLOGY,
+      vendorId: vendorUser.id,
+      brandable: false,
+      ecoFriendly: false,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Custom Company Hoodie",
+      description: "High-quality, comfortable hoodie with embroidered company logo. Available in multiple colors and sizes.",
+      price: 3800, // $38.00
+      imageUrl: "https://images.unsplash.com/photo-1572495641004-28421ae29e9b?auto=format&fit=crop&q=80&w=2057&ixlib=rb-4.0.3",
+      category: GiftCategory.APPAREL,
+      vendorId: vendorUser.id,
+      brandable: true,
+      ecoFriendly: false,
+      approved: true
+    });
+    
+    this.createGift({
+      name: "Portable Espresso Maker",
+      description: "Compact, travel-friendly espresso maker for coffee lovers on the go. Perfect for business travelers.",
+      price: 6500, // $65.00
+      imageUrl: "https://images.unsplash.com/photo-1632079001242-307e71b468e4?auto=format&fit=crop&q=80&w=1287&ixlib=rb-4.0.3",
+      category: GiftCategory.TRAVEL,
+      vendorId: vendorUser.id,
+      brandable: false,
+      ecoFriendly: false,
+      approved: true
     });
   }
 

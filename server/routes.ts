@@ -44,7 +44,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const approved = req.query.approved === "true" ? true : 
                         req.query.approved === "false" ? false : undefined;
-      const category = req.query.category as string | undefined;
+      
+      // Handle multiple categories (comma-separated string or array)
+      let categories: string[] = [];
+      if (req.query.categories) {
+        const categoriesParam = req.query.categories;
+        if (Array.isArray(categoriesParam)) {
+          categories = categoriesParam as string[];
+        } else {
+          categories = (categoriesParam as string).split(',').filter(c => c.trim() !== '');
+        }
+      } else if (req.query.category) {
+        // Support legacy single category parameter
+        const category = req.query.category as string;
+        if (category && category !== 'all') {
+          categories = [category];
+        }
+      }
+      
       const brandable = req.query.brandable === "true" ? true : undefined;
       const ecoFriendly = req.query.ecoFriendly === "true" ? true : undefined;
       const search = req.query.search as string | undefined;
@@ -52,8 +69,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let gifts = await storage.getAllGifts(approved);
       
       // Apply filters
-      if (category) {
-        gifts = gifts.filter(gift => gift.category === category);
+      if (categories.length > 0) {
+        gifts = gifts.filter(gift => categories.includes(gift.category));
       }
       
       if (brandable !== undefined) {
