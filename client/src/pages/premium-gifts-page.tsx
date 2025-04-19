@@ -60,82 +60,69 @@ export default function CustomHamperChatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Simulated chatbot message generation
+  // OpenAI chatbot integration
   const [isBotTyping, setIsBotTyping] = useState(false);
   
   const generateBotResponse = async (userMessage: string) => {
     setIsBotTyping(true);
     
-    // In a real implementation, this would call the OpenAI API
-    // For now, we'll simulate a response based on keywords
-    const lowerMessage = userMessage.toLowerCase();
-    
-    // Wait for simulated processing time
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    let botResponse = "";
-    let suggestedHamper: CustomHamper | null = null;
-    
-    // Simple keyword-based response logic
-    if (lowerMessage.includes("budget") || lowerMessage.includes("price")) {
-      botResponse = "We have hampers at various price points. Our economy hampers start at $50, standard hampers around $100, and premium options can go up to $300. What price range are you thinking of?";
-    } 
-    else if (lowerMessage.includes("christmas") || lowerMessage.includes("holiday")) {
-      botResponse = "For holiday gift hampers, I recommend including festive treats like chocolates, cookies, and perhaps a bottle of wine or spirits if appropriate. Would you like me to suggest a complete holiday hamper?";
-      suggestedHamper = {
-        name: "Holiday Celebration Hamper",
-        description: "A festive collection of gourmet treats and holiday-themed items perfect for the season.",
-        items: ["Gourmet Chocolate Box", "Assorted Cookies", "Sparkling Cider", "Holiday Ornament", "Scented Candle"],
-        price: 12500 // $125.00
+    try {
+      // Prepare conversation history for API
+      const conversationHistory = messages
+        .filter(msg => msg.id !== "welcome") // Exclude welcome message
+        .map(msg => msg.content);
+      
+      // Add latest user message
+      const apiMessages = [...conversationHistory, userMessage];
+      
+      // Call the backend API which will securely call OpenAI
+      const response = await fetch('/api/hamper-suggestions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ messages: apiMessages }),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to get response from AI assistant");
+      }
+      
+      const data = await response.json();
+      
+      // Add bot response to messages
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: data.message,
+        timestamp: new Date()
       };
-    }
-    else if (lowerMessage.includes("thank you") || lowerMessage.includes("appreciation")) {
-      botResponse = "For appreciation hampers, I suggest a mix of practical items and indulgent treats. Would you like a suggestion for a thank you hamper?";
-      suggestedHamper = {
-        name: "Gratitude Gift Basket",
-        description: "A thoughtful collection of items to show sincere appreciation.",
-        items: ["Premium Leather Journal", "Gourmet Tea Set", "Artisan Chocolates", "Wireless Charger", "Succulent Plant"],
-        price: 15000 // $150.00
+      
+      setMessages(prev => [...prev, newMessage]);
+      
+      // If a hamper was suggested, set it
+      if (data.hamper) {
+        setCurrentHamper({
+          name: data.hamper.name,
+          description: data.hamper.description,
+          items: data.hamper.items,
+          price: data.hamper.price,
+        });
+      }
+      
+    } catch (error) {
+      // Handle errors - add an error message from the bot
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: "I apologize, but I encountered an error while processing your request. Please try again later.",
+        timestamp: new Date()
       };
-    }
-    else if (lowerMessage.includes("wellness") || lowerMessage.includes("health") || lowerMessage.includes("self care")) {
-      botResponse = "A wellness hamper is an excellent choice! I can suggest a collection of items focused on relaxation and self-care. Would you like to see my recommendation?";
-      suggestedHamper = {
-        name: "Wellness & Relaxation Hamper",
-        description: "A curated selection of items to promote relaxation and well-being.",
-        items: ["Essential Oil Diffuser", "Organic Tea Sampler", "Luxury Bath Bombs", "Mindfulness Journal", "Bamboo Towel Set"],
-        price: 13500 // $135.00
-      };
-    }
-    else if (lowerMessage.includes("tech") || lowerMessage.includes("gadget")) {
-      botResponse = "For tech enthusiasts, I can put together a hamper with useful gadgets and accessories. Would you like to see what I have in mind?";
-      suggestedHamper = {
-        name: "Tech Essentials Hamper",
-        description: "A collection of must-have tech accessories for the modern professional.",
-        items: ["Wireless Earbuds", "Power Bank", "Multi-device Charging Station", "Smart Notebook", "Tech Organizer Pouch"],
-        price: 18000 // $180.00
-      };
-    }
-    else if (lowerMessage.includes("create") || lowerMessage.includes("customize") || lowerMessage.includes("make")) {
-      botResponse = "I'd be happy to help you create a custom hamper. Could you tell me more about the occasion, recipient preferences, and your budget?";
-    }
-    else {
-      botResponse = "I'd be happy to help you create the perfect gift hamper. Could you tell me more about your requirements? For example, what's the occasion, who is it for, and do you have a specific budget in mind?";
-    }
-    
-    // Add bot response to messages
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      role: "assistant",
-      content: botResponse,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, newMessage]);
-    setIsBotTyping(false);
-    
-    if (suggestedHamper) {
-      setCurrentHamper(suggestedHamper);
+      
+      setMessages(prev => [...prev, errorMessage]);
+      console.error("Error generating response:", error);
+    } finally {
+      setIsBotTyping(false);
     }
   };
 
