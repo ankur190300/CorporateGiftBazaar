@@ -83,6 +83,26 @@ export default function Navbar() {
                 </a>
               </Link>
               
+              <Link href="/hampers">
+                <a className={`${
+                  location === "/hampers" 
+                    ? "border-primary text-gray-900" 
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+                  Gift Hampers
+                </a>
+              </Link>
+              
+              <Link href="/custom-hamper">
+                <a className={`${
+                  location === "/custom-hamper" 
+                    ? "border-primary text-gray-900" 
+                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
+                  Create Custom Hamper
+                </a>
+              </Link>
+              
               {/* HR-specific nav items */}
               {user && user.role === UserRole.HR && (
                 <Link href="/cart">

@@ -10,6 +10,8 @@ import CartPage from "@/pages/cart-page";
 import VendorProducts from "@/pages/vendor-products";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AdminUsers from "@/pages/admin-users";
+import HampersPage from "@/pages/hampers-page";
+import CustomHamperChatbot from "@/pages/premium-gifts-page";
 import { ProtectedRoute } from "@/lib/protected-route";
 import Navbar from "@/components/ui/navbar";
 import Footer from "@/components/ui/footer";
@@ -25,6 +27,8 @@ function Router() {
           <Route path="/auth" component={AuthPage} />
           <Route path="/gifts" component={GiftSearch} />
           <Route path="/gifts/:id" component={GiftDetail} />
+          <Route path="/hampers" component={HampersPage} />
+          <Route path="/custom-hamper" component={CustomHamperChatbot} />
           <ProtectedRoute 
             path="/cart" 
             component={CartPage} 
